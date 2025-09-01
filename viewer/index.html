@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta name="viewport" content="width=device-width, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, user-scalable=no, viewport-fit=cover" />
         <title>PDF</title>
         <link rel="stylesheet" href="/viewer/main.css">
         <script type="module" src="/viewer/js/index.js"></script>
     </head>
     <body>
-        <div id="container">
-            <canvas id="content"></canvas>
-            <div id="text" class="textLayer"></div>
+        <div id="scroller">
+            <div id="container">
+                <section class="page">
+                    <canvas id="content"></canvas>
+                    <div id="text" class="textLayer"></div>
+                </section>
+            </div>
         </div>
     </body>
 </html>

@@ -13,6 +13,7 @@ let pageRendering = false;
 let renderPending = false;
 let renderPendingZoom = 0;
 const canvas = document.getElementById("content");
+const scroller = document.getElementById("scroller");
 const container = document.getElementById("container");
 let orientationDegrees = 0;
 let zoomRatio = 1;
@@ -73,9 +74,17 @@ function display(newCanvas, zoom) {
 function getDefaultZoomRatio(page, orientationDegrees) {
     const totalRotation = (orientationDegrees + page.rotate) % 360;
     const viewport = page.getViewport({scale: 1, rotation: totalRotation});
-    const widthZoomRatio = document.body.clientWidth / viewport.width;
-    const heightZoomRatio = document.body.clientHeight / viewport.height;
-    return Math.max(Math.min(widthZoomRatio, heightZoomRatio, channel.getMaxZoomRatio()), channel.getMinZoomRatio());
+
+    const scrollerStyle = getComputedStyle(scroller);
+    const scrollerContentWidth = scroller.clientWidth - parseFloat(scrollerStyle.paddingLeft) - parseFloat(scrollerStyle.paddingRight);
+
+    const containerStyle = getComputedStyle(container);
+    const containerPaddingHorizontal = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+
+    const defaultContentWidth = scrollerContentWidth - containerPaddingHorizontal;
+
+    const widthZoomRatio = defaultContentWidth / viewport.width;
+    return Math.max(Math.min(widthZoomRatio, channel.getMaxZoomRatio()), channel.getMinZoomRatio());
 }
 
 /**
@@ -230,14 +239,16 @@ function renderPage(pageNumber, zoom, prerender, prerenderTrigger = 0) {
             textLayerDiv.hidden = true;
             pageRendering = false;
 
+            const scrollerStyle = getComputedStyle(scroller);
+
             // zoom focus relative to page origin, rather than screen origin
-            const globalFocusX = channel.getZoomFocusX() / ratio + globalThis.scrollX;
-            const globalFocusY = channel.getZoomFocusY() / ratio + globalThis.scrollY;
+            const globalFocusX = channel.getZoomFocusX() / ratio + scroller.scrollLeft - parseFloat(scrollerStyle.paddingLeft);
+            const globalFocusY = channel.getZoomFocusY() / ratio + scroller.scrollTop - parseFloat(scrollerStyle.paddingTop);
 
             const translationFactor = scaleFactor - 1;
             const scrollX = globalFocusX * translationFactor;
             const scrollY = globalFocusY * translationFactor;
-            scrollBy(scrollX, scrollY);
+            scroller.scrollBy(scrollX, scrollY);
 
             return;
         }
@@ -426,14 +437,18 @@ globalThis.loadDocument = function () {
     });
 };
 
-globalThis.addEventListener("DOMContentLoaded", () => {
+globalThis.updateInsets = function () {
     const insets = JSON.parse(channel.getInsetsJSON());
     const ratio = globalThis.devicePixelRatio;
     const toCssPx = v => `${(Number(v) || 0) / ratio}px`;
     const root = document.documentElement.style;
     
-    root.setProperty("--safe-top", toCssPx(insets.top));
-    root.setProperty("--safe-right",  toCssPx(insets.right));
-    root.setProperty("--safe-bottom", toCssPx(insets.bottom));
-    root.setProperty("--safe-left",   toCssPx(insets.left));
+    root.setProperty("--inset-top", toCssPx(insets.top));
+    root.setProperty("--inset-right",  toCssPx(insets.right));
+    root.setProperty("--inset-bottom", toCssPx(insets.bottom));
+    root.setProperty("--inset-left",   toCssPx(insets.left));
+};
+
+addEventListener("DOMContentLoaded", () => {
+    globalThis.updateInsets();
 });

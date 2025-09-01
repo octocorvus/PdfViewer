@@ -29,7 +29,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -37,6 +40,9 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 
 import com.google.android.material.snackbar.Snackbar;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -265,6 +271,37 @@ public class PdfViewer extends AppCompatActivity implements LoaderManager.Loader
         public String getPassword() {
             return mEncryptedDocumentPassword != null ? mEncryptedDocumentPassword : "";
         }
+
+        @JavascriptInterface
+        public String getInsetsJSON() {
+            int top = 0, right = 0, bottom = 0, left = 0;
+
+            WindowInsetsCompat wic = ViewCompat.getRootWindowInsets(binding.getRoot());
+            if (wic != null) {
+                int types = WindowInsetsCompat.Type.statusBars()
+                        | WindowInsetsCompat.Type.navigationBars()
+                        | WindowInsetsCompat.Type.displayCutout();
+                Insets insets = wic.getInsetsIgnoringVisibility(types);
+                top = insets.top;
+                right = insets.right;
+                bottom = insets.bottom;
+                left = insets.left;
+            }
+
+            top += binding.toolbar.getHeight();
+
+            try {
+                return new JSONObject()
+                        .put("top", top)
+                        .put("right", right)
+                        .put("bottom", bottom)
+                        .put("left", left)
+                        .toString();
+            } catch (JSONException e) {
+                // should never happen
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private void showWebViewCrashed() {
@@ -303,6 +340,13 @@ public class PdfViewer extends AppCompatActivity implements LoaderManager.Loader
             } else {
                 onJumpToPageInDocument(newPage);
             }
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            if (mUri != null) {
+                binding.webview.evaluateJavascript("updateInsets()", null);
+            }
+            return insets;
         });
 
         // Margins for the toolbar are needed, so that content of the toolbar

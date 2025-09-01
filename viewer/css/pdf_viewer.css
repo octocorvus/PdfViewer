@@ -1,41 +1,51 @@
+:root {
+    --inset-top: 0px;
+    --inset-right: 0px;
+    --inset-bottom: 0px;
+    --inset-left: 0px;
+}
+
 html,
 body {
+    margin: 0;
     height: 100%;
 }
 
-body,
-canvas {
-    padding: 0;
-    margin: 0;
+body {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background-color: #c0c0c0;
 }
 
-body {
-    background-color: #c0c0c0;
+#scroller {
+    position: fixed;
+    inset: 0;
+    overflow: auto;
+    padding: var(--inset-top) var(--inset-right) var(--inset-bottom) var(--inset-left);
 }
 
 #container {
     --scale-factor: 1;
+
+    padding: 8px;
+
+    width: max-content;
+    margin: 0 auto;
+}
+
+#container .page {
     --user-unit: 1;
     --total-scale-factor: calc(var(--scale-factor) * var(--user-unit));
     --scale-round-x: 1px;
     --scale-round-y: 1px;
 
-    width: 100%;
-    height: 100%;
-    display: grid;
-    place-items: center;
-}
-
-#container canvas,
-#container .textLayer {
-    /* overlay child elements on top of each other */
-    grid-row-start: 1;
-    grid-column-start: 1;
-}
-
-canvas {
-    display: inline-block;
     position: relative;
+}
+
+.page .canvas {
+    position: absolute;
+    display: block;
 }
 
 [data-main-rotation="90"] {
