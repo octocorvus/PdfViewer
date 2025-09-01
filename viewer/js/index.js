@@ -70,14 +70,6 @@ function display(newCanvas, zoom) {
     }
 }
 
-function setLayerTransform(pageWidth, pageHeight, layerDiv) {
-    const translate = {
-        X: Math.max(0, pageWidth - document.body.clientWidth) / 2,
-        Y: Math.max(0, pageHeight - document.body.clientHeight) / 2
-    };
-    layerDiv.style.translate = `${translate.X}px ${translate.Y}px`;
-}
-
 function getDefaultZoomRatio(page, orientationDegrees) {
     const totalRotation = (orientationDegrees + page.rotate) % 360;
     const viewport = page.getViewport({scale: 1, rotation: totalRotation});
@@ -197,7 +189,6 @@ function renderPage(pageNumber, zoom, prerender, prerenderTrigger = 0) {
 
                 textLayerDiv.replaceWith(cached.textLayerDiv);
                 textLayerDiv = cached.textLayerDiv;
-                setLayerTransform(cached.pageWidth, cached.pageHeight, textLayerDiv);
                 container.style.setProperty("--scale-factor", newZoomRatio.toString());
                 textLayerDiv.hidden = false;
             }
@@ -308,7 +299,6 @@ function renderPage(pageNumber, zoom, prerender, prerenderTrigger = 0) {
 
                 render();
 
-                setLayerTransform(viewport.width, viewport.height, newTextLayerDiv);
                 if (useRender) {
                     textLayerDiv.replaceWith(newTextLayerDiv);
                     textLayerDiv = newTextLayerDiv;
@@ -434,8 +424,4 @@ globalThis.loadDocument = function () {
     }, function (reason) {
         console.error(reason.name + ": " + reason.message);
     });
-};
-
-globalThis.onresize = () => {
-    setLayerTransform(canvas.clientWidth, canvas.clientHeight, textLayerDiv);
 };
