@@ -13,6 +13,7 @@ let pageRendering = false;
 let renderPending = false;
 let renderPendingZoom = 0;
 const canvas = document.getElementById("content");
+const scroller = document.getElementById("scroll");
 const container = document.getElementById("container");
 let orientationDegrees = 0;
 let zoomRatio = 1;
@@ -231,13 +232,13 @@ function renderPage(pageNumber, zoom, prerender, prerenderTrigger = 0) {
             pageRendering = false;
 
             // zoom focus relative to page origin, rather than screen origin
-            const globalFocusX = channel.getZoomFocusX() / ratio + globalThis.scrollX;
-            const globalFocusY = channel.getZoomFocusY() / ratio + globalThis.scrollY;
+            const focusX = channel.getZoomFocusX() / ratio + scroller.scrollLeft;
+            const focusY = channel.getZoomFocusY() / ratio + scroller.scrollTop;
 
             const translationFactor = scaleFactor - 1;
-            const scrollX = globalFocusX * translationFactor;
-            const scrollY = globalFocusY * translationFactor;
-            scrollBy(scrollX, scrollY);
+            const scrollX = focusX * translationFactor;
+            const scrollY = focusY * translationFactor;
+            scroller.scrollBy(scrollX, scrollY);
 
             return;
         }
