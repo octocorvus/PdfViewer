@@ -426,3 +426,15 @@ globalThis.loadDocument = function () {
         console.error(reason.name + ": " + reason.message);
     });
 };
+
+globalThis.addEventListener("DOMContentLoaded", () => {
+    const insets = JSON.parse(channel.getInsetsJSON());
+    const ratio = globalThis.devicePixelRatio;
+    const toCssPx = v => `${(Number(v) || 0) / ratio}px`;
+    const root = document.documentElement.style;
+    
+    root.setProperty("--safe-top", toCssPx(insets.top));
+    root.setProperty("--safe-right",  toCssPx(insets.right));
+    root.setProperty("--safe-bottom", toCssPx(insets.bottom));
+    root.setProperty("--safe-left",   toCssPx(insets.left));
+});
